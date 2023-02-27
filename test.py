@@ -30,3 +30,9 @@ def inner_wrapper():
 inner_wrapper()
 
 partial(inner)()
+
+def outer_lambda():
+    iλ = lambda: debug('in lambda')
+    iλ()
+
+outer_lambda()

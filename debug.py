@@ -21,9 +21,10 @@ def stack_functions(frame, max_depth=1024):
     functions = []
     depth = 0
     while depth < max_depth and frame and frame.f_code.co_name != '<module>':
+        parent = frame.f_back
         func = frame.f_code.co_name
-        if func == '<lambda>':
-            for mapping in frame.f_locals, frame.f_globals, frame.f_builtins:
+        if func == '<lambda>' and parent is not None:
+            for mapping in parent.f_locals, parent.f_globals, parent.f_builtins:
                 for name, attr in mapping.items():
                     if getattr(attr, '__code__', None) is frame.f_code:
                         func = f'<{name}>'
@@ -32,7 +33,7 @@ def stack_functions(frame, max_depth=1024):
                     continue
                 break
         functions.append(func)
-        frame = frame.f_back
+        frame = parent
         depth += 1
     return functions
 

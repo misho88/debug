@@ -17,23 +17,48 @@ from pathlib import Path
 from types import FrameType
 
 
+def get_function_name(frame):
+    if hasattr(frame.f_code, 'co_qualname'):
+        return frame.f_code.co_qualname
+
+    try:
+        from executing import Source
+    except (ModuleNotFoundError, ImportError):
+        return frame.f_code.co_name
+
+    name = Source.executing(frame).code_qualname()
+    assert name.endswith(frame.f_code.co_name)
+    assert name.rfind('.') + 1 == len(name) - len(frame.f_code.co_name)
+    return name
+
+
+def get_lambda_name(frame):
+    parent = frame.f_back
+    if parent is None:
+        return frame.f_code.co_name
+
+    qualname = get_function_name(frame)
+
+    for mapping in parent.f_locals, parent.f_globals, parent.f_builtins:
+        for name, attr in mapping.items():
+            if getattr(attr, '__code__', None) is frame.f_code:
+                return f'{qualname[:-len(frame.f_code.co_name)]}<{name}>'
+
+    return qualname
+
+
 def stack_functions(frame, max_depth=1024):
     functions = []
     depth = 0
     while depth < max_depth and frame and frame.f_code.co_name != '<module>':
-        parent = frame.f_back
         func = frame.f_code.co_name
-        if func == '<lambda>' and parent is not None:
-            for mapping in parent.f_locals, parent.f_globals, parent.f_builtins:
-                for name, attr in mapping.items():
-                    if getattr(attr, '__code__', None) is frame.f_code:
-                        func = f'<{name}>'
-                        break
-                else:
-                    continue
-                break
+        if func == '<lambda>':
+            func = get_lambda_name(frame)
+        else:
+            func = get_function_name(frame)
+
         functions.append(func)
-        frame = parent
+        frame = frame.f_back
         depth += 1
     return functions
 

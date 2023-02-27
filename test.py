@@ -36,3 +36,22 @@ def outer_lambda():
     iλ()
 
 outer_lambda()
+
+
+def outer():
+    def inner():
+        debug('here')
+    return inner
+
+outer()()
+
+
+class C:
+    def func():
+        debug('func')
+    def meth(self):
+        debug('meth')
+
+
+C.func()
+C().meth()

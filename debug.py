@@ -82,6 +82,41 @@ def debug(*args, caller=1, max_depth=1024, sep=': ', file=stderr, **kwargs):
     sep: like print(), but the default is ': '
     file: file print(), but the default is stderr
     **kwargs: passed to print() (e.g., end='\n' and flush=False)
+
+    Examples:
+
+    Basic:
+    >>> debug('msg', 'detail')
+    <stdin>[1]: msg: detail
+    >>> def func(): debug('msg', 'detail')
+    ...
+    >>> func()
+    <stdin>[1]: func(): msg: detail
+
+    Work out names of lambdas:
+    >>> lamb = lambda: debug('msg', 'detail')
+    >>> lamb()
+    <stdin>[1]: <lamb>(): msg: detail
+
+    Go through the stack:
+    >>> f = lambda: debug('xxx')
+    >>> g = lambda: f()
+    >>> g()
+    <stdin>[1]: <g>(): <f>(): xxx
+
+    Customizing via wrapper:
+    >>> def debug_xxx(*args, caller=1, **kwargs): debug('xxx', *args, caller=caller + 1, **kwargs)
+    ...
+    >>> f = lambda: debug_xxx('msg', 'detail')
+    >>> f()
+    <stdin>[1]: <f>(): xxx: msg: detail
+
+    Customizing via partial:
+    >>> from functools import partial
+    >>> debug_xxx = partial(debug, 'xxx')
+    >>> f = lambda: debug_xxx('msg', 'detail')
+    >>> f()
+    <stdin>[1]: <f>(): xxx: msg: detail
     '''
     if isinstance(caller, FrameType):
         frame = caller

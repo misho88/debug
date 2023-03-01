@@ -12,8 +12,8 @@
 __all__ = 'debug',
 
 from sys import stderr
+from os.path import relpath
 from inspect import currentframe
-from pathlib import Path
 from types import FrameType
 
 
@@ -64,7 +64,7 @@ def stack_functions(frame, max_depth=1024):
 
 
 def context(frame, max_depth=1024):
-    path = Path(frame.f_code.co_filename).resolve().relative_to(Path().resolve())
+    path = relpath(frame.f_code.co_filename, '.')
     line = frame.f_lineno
     funcs = stack_functions(frame, max_depth=max_depth)
     return path, line, funcs

@@ -12,7 +12,7 @@
 __all__ = 'debug',
 
 from sys import stderr
-from os.path import relpath
+from os.path import relpath, abspath, sep, commonpath, curdir
 from inspect import currentframe
 from types import FrameType
 
@@ -64,7 +64,9 @@ def stack_functions(frame, max_depth=1024):
 
 
 def context(frame, max_depth=1024):
-    path = relpath(frame.f_code.co_filename, '.')
+    path = abspath(frame.f_code.co_filename)
+    if commonpath((path, abspath(curdir))) != sep:
+        path = relpath(frame.f_code.co_filename)
     line = frame.f_lineno
     funcs = stack_functions(frame, max_depth=max_depth)
     return path, line, funcs

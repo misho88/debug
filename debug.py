@@ -132,7 +132,7 @@ def debug(*args, caller=1, max_depth=1024, sep=': ', file=stderr, **kwargs):
             return print(*args, sep=sep, file=file, **kwargs)
 
     path, line, funcs = context(frame, max_depth=max_depth)
-    return print(
+    print(
         f'{path}[{line}]',
         *(f'{f}()' for f in funcs[::-1]),
         *args,
@@ -140,3 +140,4 @@ def debug(*args, caller=1, max_depth=1024, sep=': ', file=stderr, **kwargs):
         file=file,
         **kwargs,
     )
+    return None if len(args) == 0 else args[0] if len(args) == 1 else args
